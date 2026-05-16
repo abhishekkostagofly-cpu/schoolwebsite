@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunrise Academy – Where Every Child Shines</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Anime.js for extra candy -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+<style>
+/* ───────────────────────────── RESET & VARS ───────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sun:#FFD93D;
+  --sky:#0EA5E9;
+  --sky-dark:#075985;
+  --coral:#FF6B6B;
+  --mint:#4ECDC4;
+  --lavender:#A78BFA;
+  --lime:#84CC16;
+  --peach:#FFA07A;
+  --cream:#FFFBF0;
+  --dark:#1A1A2E;
+  --card-bg:rgba(255,255,255,0.92);
+  --r:1.5rem;
+}
+
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  background:var(--cream);
+  font-family:'Nunito',sans-serif;
+  color:var(--dark);
+  overflow-x:hidden;
+}
+
+/* ──────────────────────────── CUSTOM CURSOR ───────────────────────────── */
+.cursor{
+  width:20px;height:20px;
+  background:var(--sun);
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9999;
+  mix-blend-mode:multiply;
+  transition:transform .15s ease;
+}
+.cursor-ring{
+  width:44px;height:44px;
+  border:2px solid var(--coral);
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9998;
+  transition:all .25s ease;
+}
+
+/* ──────────────────────────── LOADER ─────────────────────────────────── */
+#loader{
+  position:fixed;inset:0;
+  background:var(--dark);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:10000;gap:1.5rem;
+}
+.loader-sun{
+  width:80px;height:80px;
+  background:var(--sun);
+  border-radius:50%;
+  box-shadow:0 0 0 10px rgba(255,217,61,.3),0 0 0 20px rgba(255,217,61,.15);
+  animation:pulse-sun 1.2s ease-in-out infinite;
+}
+@keyframes pulse-sun{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 10px rgba(255,217,61,.3),0 0 0 20px rgba(255,217,61,.15)}
+  50%{transform:scale(1.15);box-shadow:0 0 0 18px rgba(255,217,61,.3),0 0 0 36px rgba(255,217,61,.1)}
+}
+.loader-text{
+  font-family:'Fredoka One',cursive;
+  font-size:1.8rem;color:#fff;
+  letter-spacing:.1em;
+}
+.loader-bar{
+  width:200px;height:6px;
+  background:rgba(255,255,255,.15);
+  border-radius:99px;overflow:hidden;
+}
+.loader-fill{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--sun),var(--coral));
+  border-radius:99px;
+  animation:fill 2s ease forwards;
+}
+@keyframes fill{to{width:100%}}
+
+/* ──────────────────────────── NAV ────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  padding:1rem 4%;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all .4s ease;
+}
+nav.scrolled{
+  background:rgba(255,251,240,.95);
+  backdrop-filter:blur(12px);
+  box-shadow:0 4px 24px rgba(0,0,0,.08);
+  padding:.7rem 4%;
+}
+.nav-logo{
+  font-family:'Fredoka One',cursive;
+  font-size:1.8rem;color:#fff;
+  display:flex;align-items:center;gap:.5rem;
+  text-decoration:none;transition:color .3s;
+}
+nav.scrolled .nav-logo{color:var(--dark)}
+.nav-logo span{color:var(--sun)}
+.logo-star{font-size:1.4rem;animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.nav-links{
+  display:flex;gap:2rem;list-style:none;
+}
+.nav-links a{
+  font-weight:700;font-size:.95rem;
+  color:rgba(255,255,255,.9);
+  text-decoration:none;
+  transition:all .3s;
+  position:relative;padding:.2rem 0;
+}
+nav.scrolled .nav-links a{color:var(--dark)}
+.nav-links a::after{
+  content:'';position:absolute;bottom:0;left:0;width:0;height:2px;
+  background:var(--coral);border-radius:2px;transition:width .3s;
+}
+.nav-links a:hover::after{width:100%}
+
+.nav-btn{
+  background:var(--sun);
+  color:var(--dark);
+  font-family:'Fredoka One',cursive;
+  font-size:1rem;padding:.6rem 1.6rem;
+  border:none;border-radius:99px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(255,217,61,.5);
+  transition:all .3s;
+}
+.nav-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(255,217,61,.5)}
+
+/* hamburger */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1001}
+.hamburger span{width:28px;height:3px;background:#fff;border-radius:2px;transition:all .3s}
+nav.scrolled .hamburger span{background:var(--dark)}
+
+/* ──────────────────────────── HERO ───────────────────────────────────── */
+#hero{
+  min-height:100vh;position:relative;
+  display:flex;align-items:center;
+  overflow:hidden;
+}
+#three-canvas{
+  position:absolute;inset:0;z-index:0;
+}
+.hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(7,89,133,.85) 0%,rgba(14,165,233,.6) 60%,rgba(167,139,250,.5) 100%);
+  z-index:1;
+}
+.hero-content{
+  position:relative;z-index:2;
+  max-width:780px;
+  padding:0 6%;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(255,217,61,.2);
+  border:1px solid rgba(255,217,61,.5);
+  color:var(--sun);
+  padding:.4rem 1.2rem;border-radius:99px;
+  font-size:.85rem;font-weight:700;
+  margin-bottom:1.5rem;
+  backdrop-filter:blur(6px);
+}
+.hero-badge span{font-size:1rem}
+.hero-title{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(3rem,7vw,5.5rem);
+  line-height:1.1;color:#fff;
+  margin-bottom:1.2rem;
+}
+.hero-title .highlight{
+  color:var(--sun);
+  display:inline-block;
+  position:relative;
+}
+.hero-title .highlight::after{
+  content:'';
+  position:absolute;bottom:-4px;left:0;right:0;height:6px;
+  background:var(--coral);
+  border-radius:3px;
+  transform:skewX(-8deg);
+}
+.hero-sub{
+  font-size:clamp(1rem,2.2vw,1.25rem);
+  color:rgba(255,255,255,.85);
+  max-width:560px;
+  line-height:1.7;
+  margin-bottom:2.5rem;
+}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{
+  background:var(--sun);color:var(--dark);
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;padding:.85rem 2.2rem;
+  border:none;border-radius:99px;cursor:pointer;
+  box-shadow:0 8px 30px rgba(255,217,61,.5);
+  transition:all .3s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 14px 40px rgba(255,217,61,.6)}
+.btn-ghost{
+  background:rgba(255,255,255,.15);
+  border:2px solid rgba(255,255,255,.5);
+  color:#fff;
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;padding:.85rem 2.2rem;
+  border-radius:99px;cursor:pointer;
+  backdrop-filter:blur(6px);
+  transition:all .3s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-ghost:hover{background:rgba(255,255,255,.25);transform:translateY(-3px)}
+
+/* floating shapes */
+.floating-shapes{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.shape{
+  position:absolute;border-radius:50%;
+  opacity:.18;animation:float-shape 6s ease-in-out infinite;
+}
+.shape:nth-child(1){width:300px;height:300px;background:var(--sun);top:-80px;right:10%;animation-delay:0s}
+.shape:nth-child(2){width:200px;height:200px;background:var(--coral);bottom:15%;left:5%;animation-delay:2s}
+.shape:nth-child(3){width:150px;height:150px;background:var(--mint);bottom:30%;right:20%;animation-delay:4s}
+.shape:nth-child(4){width:80px;height:80px;background:var(--lavender);top:30%;right:35%;animation-delay:1s;border-radius:30%}
+@keyframes float-shape{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-30px) rotate(15deg)}
+}
+
+/* hero stats */
+.hero-stats{
+  position:absolute;bottom:3rem;right:6%;z-index:2;
+  display:flex;gap:1.5rem;
+}
+.stat-card{
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:1rem;padding:1rem 1.5rem;
+  text-align:center;
+}
+.stat-num{
+  font-family:'Fredoka One',cursive;
+  font-size:2rem;color:var(--sun);display:block;
+}
+.stat-label{font-size:.8rem;color:rgba(255,255,255,.8);font-weight:600}
+
+/* scroll indicator */
+.scroll-indicator{
+  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+  z-index:2;display:flex;flex-direction:column;align-items:center;gap:.5rem;
+}
+.scroll-indicator span{font-size:.75rem;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.1em}
+.scroll-dot{
+  width:28px;height:44px;border:2px solid rgba(255,255,255,.5);
+  border-radius:99px;display:flex;align-items:flex-start;justify-content:center;padding:6px;
+}
+.scroll-dot::after{
+  content:'';width:6px;height:10px;background:#fff;
+  border-radius:99px;animation:scroll-bounce 1.5s ease infinite;
+}
+@keyframes scroll-bounce{
+  0%{transform:translateY(0);opacity:1}
+  100%{transform:translateY(14px);opacity:0}
+}
+
+/* ──────────────────────────── MARQUEE ─────────────────────────────────── */
+.marquee-section{
+  background:var(--sky);
+  padding:.9rem 0;overflow:hidden;
+}
+.marquee-track{
+  display:flex;gap:3rem;
+  animation:marquee 20s linear infinite;
+  white-space:nowrap;
+}
+.marquee-item{
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;color:#fff;
+  display:flex;align-items:center;gap:.8rem;
+  flex-shrink:0;
+}
+.marquee-item::before{content:'★';color:var(--sun)}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ──────────────────────────── SECTIONS COMMON ─────────────────────────── */
+section{padding:6rem 6%}
+.section-tag{
+  display:inline-block;
+  font-family:'Fredoka One',cursive;
+  font-size:.85rem;
+  color:var(--sky);background:rgba(14,165,233,.12);
+  padding:.35rem 1rem;border-radius:99px;
+  margin-bottom:.8rem;letter-spacing:.05em;
+}
+.section-title{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(2rem,4.5vw,3.2rem);
+  line-height:1.15;margin-bottom:1rem;
+}
+.section-sub{
+  font-size:1.05rem;color:#64748B;
+  max-width:560px;line-height:1.7;
+  margin-bottom:3rem;
+}
+
+/* ──────────────────────────── ABOUT ──────────────────────────────────── */
+#about{background:#fff}
+.about-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:5rem;align-items:center;
+}
+.about-visual{
+  position:relative;
+}
+.about-img-main{
+  width:100%;border-radius:2rem;
+  background:linear-gradient(135deg,var(--sky) 0%,var(--lavender) 100%);
+  aspect-ratio:4/5;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8rem;
+  box-shadow:0 30px 80px rgba(14,165,233,.25);
+  position:relative;overflow:hidden;
+}
+.about-img-main::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='rgba(255,255,255,0.2)'/%3E%3C/svg%3E");
+}
+.about-card-float{
+  position:absolute;
+  background:var(--card-bg);
+  border-radius:1.2rem;
+  padding:1rem 1.4rem;
+  box-shadow:0 20px 60px rgba(0,0,0,.12);
+  display:flex;align-items:center;gap:.8rem;
+}
+.about-card-float.top-left{top:-1.5rem;left:-2rem}
+.about-card-float.bot-right{bottom:-1.5rem;right:-2rem}
+.about-card-icon{font-size:2rem}
+.about-card-text{font-weight:800;font-size:.9rem;color:var(--dark)}
+.about-card-text span{display:block;color:#94A3B8;font-weight:600;font-size:.78rem}
+
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem}
+.feat-item{
+  display:flex;align-items:flex-start;gap:.8rem;
+  background:var(--cream);padding:1rem;border-radius:1rem;
+}
+.feat-icon{
+  width:40px;height:40px;border-radius:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+.feat-icon.sun{background:rgba(255,217,61,.2)}
+.feat-icon.sky{background:rgba(14,165,233,.15)}
+.feat-icon.mint{background:rgba(78,205,196,.15)}
+.feat-icon.coral{background:rgba(255,107,107,.15)}
+.feat-text strong{display:block;font-weight:800;font-size:.9rem;margin-bottom:.2rem}
+.feat-text span{font-size:.82rem;color:#64748B}
+
+/* ──────────────────────────── CLASSES ────────────────────────────────── */
+#classes{background:var(--cream)}
+.classes-header{text-align:center;margin-bottom:3.5rem}
+.classes-header .section-sub{margin:0 auto 3rem}
+.classes-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1.5rem;
+}
+.class-card{
+  background:#fff;
+  border-radius:var(--r);
+  padding:2rem;
+  box-shadow:0 8px 30px rgba(0,0,0,.06);
+  transition:all .4s ease;
+  position:relative;overflow:hidden;
+  cursor:pointer;
+}
+.class-card::before{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;transition:opacity .4s;
+}
+.class-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 24px 60px rgba(0,0,0,.13)}
+.class-card:hover::before{opacity:1}
+
+.cc-nursery::before{background:linear-gradient(135deg,rgba(255,217,61,.08),rgba(255,107,107,.08))}
+.cc-primary::before{background:linear-gradient(135deg,rgba(14,165,233,.08),rgba(78,205,196,.08))}
+.cc-middle::before{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(14,165,233,.08))}
+.cc-senior::before{background:linear-gradient(135deg,rgba(132,204,22,.08),rgba(78,205,196,.08))}
+
+.class-emoji{font-size:3rem;margin-bottom:1rem;display:block}
+.class-title{
+  font-family:'Fredoka One',cursive;
+  font-size:1.4rem;margin-bottom:.3rem;
+}
+.class-range{
+  font-size:.82rem;font-weight:700;color:#94A3B8;
+  margin-bottom:1rem;
+}
+.class-desc{font-size:.9rem;color:#64748B;line-height:1.6;margin-bottom:1.5rem}
+.class-subjects{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.5rem}
+.subject-tag{
+  font-size:.75rem;font-weight:700;
+  padding:.25rem .7rem;border-radius:99px;
+}
+.st-sun{background:rgba(255,217,61,.2);color:#92400E}
+.st-sky{background:rgba(14,165,233,.15);color:var(--sky-dark)}
+.st-mint{background:rgba(78,205,196,.15);color:#0D4F4C}
+.st-coral{background:rgba(255,107,107,.15);color:#7F1D1D}
+.st-lav{background:rgba(167,139,250,.15);color:#4C1D95}
+.st-lime{background:rgba(132,204,22,.15);color:#1A2E05}
+.class-cta{
+  font-family:'Fredoka One',cursive;
+  font-size:.9rem;color:var(--sky);
+  display:flex;align-items:center;gap:.3rem;
+  transition:gap .2s;
+}
+.class-card:hover .class-cta{gap:.6rem}
+
+/* ──────────────────────────── 3D NUMBERS (counters) ──────────────────── */
+#counters{
+  background:linear-gradient(135deg,var(--sky-dark),var(--dark));
+  padding:5rem 6%;
+  position:relative;overflow:hidden;
+}
+#counters::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E");
+}
+.counters-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:2rem;position:relative;z-index:1;
+}
+.counter-item{
+  text-align:center;padding:2.5rem 1.5rem;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:1.5rem;
+  backdrop-filter:blur(6px);
+  transition:transform .3s;
+}
+.counter-item:hover{transform:translateY(-6px)}
+.counter-icon{font-size:2.5rem;margin-bottom:.8rem;display:block}
+.counter-num{
+  font-family:'Fredoka One',cursive;
+  font-size:3.5rem;color:var(--sun);
+  display:block;line-height:1;
+}
+.counter-label{font-size:.9rem;color:rgba(255,255,255,.7);font-weight:700;margin-top:.5rem}
+
+/* ──────────────────────────── FACILITIES ─────────────────────────────── */
+#facilities{background:#fff}
+.facilities-header{text-align:center;margin-bottom:3.5rem}
+.facilities-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:auto auto;
+  gap:1.5rem;
+}
+.fac-card{
+  border-radius:1.5rem;
+  padding:2rem;
+  position:relative;overflow:hidden;
+  cursor:pointer;
+  transition:all .4s ease;
+}
+.fac-card:hover{transform:scale(1.02)}
+.fac-card.large{grid-column:span 2;grid-row:span 1}
+.fac-bg{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8rem;opacity:.12;
+  transition:transform .4s,opacity .4s;
+}
+.fac-card:hover .fac-bg{transform:scale(1.2) rotate(10deg);opacity:.18}
+.fac-content{position:relative;z-index:1}
+.fac-icon{font-size:2.5rem;margin-bottom:1rem;display:block}
+.fac-name{
+  font-family:'Fredoka One',cursive;
+  font-size:1.5rem;color:#fff;margin-bottom:.5rem;
+}
+.fac-desc{font-size:.9rem;color:rgba(255,255,255,.8);line-height:1.6}
+
+.fac-sky{background:linear-gradient(135deg,#0EA5E9,#075985)}
+.fac-mint{background:linear-gradient(135deg,#4ECDC4,#0D4F4C)}
+.fac-coral{background:linear-gradient(135deg,#FF6B6B,#C02626)}
+.fac-lavender{background:linear-gradient(135deg,#A78BFA,#4C1D95)}
+.fac-lime{background:linear-gradient(135deg,#84CC16,#1A2E05)}
+.fac-sun{background:linear-gradient(135deg,#FFD93D,#B45309)}
+
+/* ──────────────────────────── TEACHERS ──────────────────────────────── */
+#teachers{background:var(--cream)}
+.teachers-header{text-align:center;margin-bottom:3.5rem}
+.teachers-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:2rem;
+}
+.teacher-card{
+  background:#fff;
+  border-radius:1.5rem;
+  padding:2rem;text-align:center;
+  box-shadow:0 8px 30px rgba(0,0,0,.06);
+  transition:all .4s;
+  overflow:hidden;position:relative;
+}
+.teacher-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.12)}
+.teacher-avatar{
+  width:90px;height:90px;
+  border-radius:50%;margin:0 auto 1.2rem;
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;
+  position:relative;
+}
+.teacher-avatar::after{
+  content:'';
+  position:absolute;inset:-4px;
+  border-radius:50%;
+  border:3px solid transparent;
+  background:var(--bg,var(--sun)) border-box;
+  -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:destination-out;
+  mask-composite:exclude;
+}
+.teacher-name{
+  font-family:'Fredoka One',cursive;
+  font-size:1.15rem;margin-bottom:.2rem;
+}
+.teacher-role{font-size:.82rem;font-weight:700;color:#94A3B8;margin-bottom:.8rem}
+.teacher-bio{font-size:.85rem;color:#64748B;line-height:1.6}
+.teacher-badge{
+  display:inline-block;margin-top:.8rem;
+  font-size:.75rem;font-weight:700;
+  padding:.25rem .8rem;border-radius:99px;
+  background:rgba(14,165,233,.12);color:var(--sky-dark);
+}
+
+/* ──────────────────────────── GALLERY ────────────────────────────────── */
+#gallery{background:#fff;overflow:hidden}
+.gallery-header{text-align:center;margin-bottom:3rem}
+.gallery-row{
+  display:flex;gap:1rem;margin-bottom:1rem;
+  animation:scroll-gallery 30s linear infinite;
+}
+.gallery-row:nth-child(2){animation-direction:reverse;animation-duration:25s}
+.gallery-item{
+  flex-shrink:0;
+  width:240px;height:180px;
+  border-radius:1rem;
+  display:flex;align-items:center;justify-content:center;
+  font-size:4rem;
+  transition:transform .3s;
+  cursor:pointer;
+  position:relative;overflow:hidden;
+}
+.gallery-item:hover{transform:scale(1.05)}
+.gallery-item::after{
+  content:attr(data-label);
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.5);
+  color:#fff;font-family:'Fredoka One',cursive;
+  font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .3s;
+}
+.gallery-item:hover::after{opacity:1}
+@keyframes scroll-gallery{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+
+/* ──────────────────────────── TESTIMONIALS ───────────────────────────── */
+#testimonials{background:var(--cream)}
+.testimonials-header{text-align:center;margin-bottom:3.5rem}
+.testimonials-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;
+}
+.testi-card{
+  background:#fff;border-radius:1.5rem;
+  padding:2rem;
+  box-shadow:0 8px 30px rgba(0,0,0,.06);
+  position:relative;transition:all .3s;
+}
+.testi-card:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,.1)}
+.testi-quote{
+  font-size:4rem;line-height:.5;
+  font-family:'Fredoka One',cursive;
+  color:var(--sun);margin-bottom:1rem;
+}
+.testi-text{font-size:.95rem;color:#475569;line-height:1.7;margin-bottom:1.5rem}
+.testi-author{display:flex;align-items:center;gap.8rem}
+.testi-avatar{
+  width:50px;height:50px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;margin-right:.8rem;
+}
+.testi-name{font-weight:800;font-size:.9rem}
+.testi-role{font-size:.78rem;color:#94A3B8;font-weight:600}
+.stars{color:var(--sun);font-size:.9rem;margin-top:.3rem}
+
+/* ──────────────────────────── ADMISSIONS ─────────────────────────────── */
+#admissions{
+  background:linear-gradient(135deg,var(--sky) 0%,var(--lavender) 100%);
+  padding:6rem 6%;text-align:center;
+  position:relative;overflow:hidden;
+}
+#admissions::before{
+  content:'🎓 📚 ✏️ 🔬 🎨 🏆 🌟 📐 🎵 ⚽';
+  position:absolute;top:1rem;left:0;right:0;
+  font-size:2rem;opacity:.1;
+  white-space:nowrap;letter-spacing:2rem;
+}
+.adm-badge{
+  display:inline-block;
+  background:rgba(255,255,255,.2);
+  color:#fff;padding:.4rem 1.2rem;
+  border-radius:99px;font-family:'Fredoka One',cursive;
+  font-size:.9rem;margin-bottom:1.2rem;
+  border:1px solid rgba(255,255,255,.3);
+}
+.adm-title{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(2rem,5vw,3.5rem);
+  color:#fff;margin-bottom:1rem;
+}
+.adm-sub{
+  color:rgba(255,255,255,.85);
+  font-size:1.05rem;max-width:540px;
+  margin:0 auto 2.5rem;line-height:1.7;
+}
+.adm-steps{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:1.5rem;margin-bottom:3rem;
+}
+.adm-step{
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.25);
+  backdrop-filter:blur(8px);
+  border-radius:1.2rem;padding:1.5rem 2rem;
+  min-width:160px;
+  transition:transform .3s;
+}
+.adm-step:hover{transform:translateY(-4px)}
+.adm-step-num{
+  font-family:'Fredoka One',cursive;
+  font-size:2rem;color:var(--sun);display:block;
+}
+.adm-step-label{font-size:.85rem;color:rgba(255,255,255,.9);font-weight:700}
+.adm-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-white{
+  background:#fff;color:var(--sky-dark);
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;padding:.85rem 2.2rem;
+  border:none;border-radius:99px;cursor:pointer;
+  box-shadow:0 8px 30px rgba(0,0,0,.15);
+  transition:all .3s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-white:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.2)}
+
+/* ──────────────────────────── CONTACT ────────────────────────────────── */
+#contact{background:#fff}
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:4rem;align-items:start;
+}
+.contact-info h3{
+  font-family:'Fredoka One',cursive;
+  font-size:1.8rem;margin-bottom:1.5rem;
+}
+.contact-items{display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem}
+.c-item{
+  display:flex;align-items:center;gap:1rem;
+  padding:1rem;background:var(--cream);
+  border-radius:1rem;
+}
+.c-icon{
+  width:44px;height:44px;border-radius:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.c-icon.sky{background:rgba(14,165,233,.15)}
+.c-icon.sun{background:rgba(255,217,61,.2)}
+.c-icon.mint{background:rgba(78,205,196,.15)}
+.c-text strong{display:block;font-weight:800;font-size:.9rem}
+.c-text span{font-size:.85rem;color:#64748B}
+
+.contact-form{
+  background:var(--cream);
+  border-radius:1.5rem;padding:2.5rem;
+}
+.contact-form h3{
+  font-family:'Fredoka One',cursive;
+  font-size:1.6rem;margin-bottom:1.5rem;
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.form-group{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.form-group label{font-size:.85rem;font-weight:700;color:#475569}
+.form-group input,
+.form-group select,
+.form-group textarea{
+  background:#fff;border:2px solid #E2E8F0;
+  border-radius:.8rem;padding:.75rem 1rem;
+  font-family:'Nunito',sans-serif;font-size:.95rem;
+  color:var(--dark);transition:border-color .2s;outline:none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{border-color:var(--sky)}
+.form-group textarea{resize:vertical;min-height:100px}
+.submit-btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--sky),var(--lavender));
+  color:#fff;font-family:'Fredoka One',cursive;
+  font-size:1.1rem;padding:1rem;
+  border:none;border-radius:99px;cursor:pointer;
+  box-shadow:0 8px 30px rgba(14,165,233,.35);
+  transition:all .3s;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(14,165,233,.45)}
+
+/* ──────────────────────────── FOOTER ─────────────────────────────────── */
+footer{
+  background:var(--dark);
+  padding:4rem 6% 2rem;
+}
+.footer-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:3rem;margin-bottom:3rem;
+}
+.footer-brand .nav-logo{color:#fff;margin-bottom:1rem;display:inline-flex}
+.footer-brand p{font-size:.9rem;color:#94A3B8;line-height:1.7;max-width:280px;margin-bottom:1.5rem}
+.social-links{display:flex;gap:.8rem}
+.social-btn{
+  width:38px;height:38px;border-radius:.6rem;
+  background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;transition:all .3s;
+  text-decoration:none;
+}
+.social-btn:hover{background:var(--sky);transform:translateY(-3px)}
+.footer-col h4{
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;color:#fff;margin-bottom:1.2rem;
+}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.7rem}
+.footer-col li a{
+  font-size:.9rem;color:#94A3B8;text-decoration:none;
+  transition:color .2s;display:flex;align-items:center;gap:.4rem;
+}
+.footer-col li a:hover{color:var(--sun)}
+.footer-col li a::before{content:'→';font-size:.8rem}
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-top:2rem;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+}
+.footer-bottom p{font-size:.85rem;color:#64748B}
+.footer-bottom span{color:var(--coral)}
+
+/* ──────────────────────────── BACK TO TOP ─────────────────────────────── */
+#back-top{
+  position:fixed;bottom:2rem;right:2rem;
+  width:50px;height:50px;
+  background:linear-gradient(135deg,var(--sky),var(--lavender));
+  border:none;border-radius:50%;cursor:pointer;
+  font-size:1.3rem;color:#fff;
+  box-shadow:0 8px 24px rgba(14,165,233,.4);
+  transition:all .3s;z-index:999;
+  opacity:0;pointer-events:none;
+}
+#back-top.show{opacity:1;pointer-events:auto}
+#back-top:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(14,165,233,.5)}
+
+/* ──────────────────────────── MOBILE NAV ──────────────────────────────── */
+.mobile-nav{
+  position:fixed;inset:0;z-index:999;
+  background:var(--dark);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2rem;
+  transform:translateX(100%);transition:transform .4s ease;
+}
+.mobile-nav.open{transform:translateX(0)}
+.mobile-nav a{
+  font-family:'Fredoka One',cursive;
+  font-size:2rem;color:#fff;text-decoration:none;
+  transition:color .2s;
+}
+.mobile-nav a:hover{color:var(--sun)}
+
+/* ──────────────────────────── RESPONSIVE ─────────────────────────────── */
+@media(max-width:1024px){
+  .about-grid{grid-template-columns:1fr;gap:3rem}
+  .about-visual{display:none}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .facilities-grid{grid-template-columns:1fr 1fr}
+  .fac-card.large{grid-column:span 1}
+}
+@media(max-width:768px){
+  .nav-links,.nav-btn{display:none}
+  .hamburger{display:flex}
+  .hero-stats{display:none}
+  .contact-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .facilities-grid{grid-template-columns:1fr}
+  .counter-num{font-size:2.5rem}
+  section{padding:4rem 5%}
+  .cursor,.cursor-ring{display:none}
+}
+
+/* ──────────────────────────── SCROLL REVEAL ───────────────────────────── */
+.reveal{
+  opacity:0;transform:translateY(40px);
+  transition:none;
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-sun"></div>
+  <div class="loader-text">Sunrise Academy ☀️</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="#about" onclick="closeMobile()">About</a>
+  <a href="#classes" onclick="closeMobile()">Classes</a>
+  <a href="#facilities" onclick="closeMobile()">Facilities</a>
+  <a href="#teachers" onclick="closeMobile()">Teachers</a>
+  <a href="#admissions" onclick="closeMobile()">Admissions</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo"><span class="logo-star">☀️</span> Sunrise <span>Academy</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#classes">Classes</a></li>
+    <li><a href="#facilities">Facilities</a></li>
+    <li><a href="#teachers">Teachers</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-btn" onclick="scrollTo('#admissions')">Apply Now ✨</button>
+  <div class="hamburger" id="hamburger" onclick="toggleMobile()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="three-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="floating-shapes">
+    <div class="shape"></div><div class="shape"></div>
+    <div class="shape"></div><div class="shape"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge"><span>🏆</span> #1 Rated Primary School 2024</div>
+    <h1 class="hero-title">
+      Where Every<br>
+      Child <span class="highlight">Shines</span><br>
+      & Grows
+    </h1>
+    <p class="hero-sub">Nurturing young minds from Nursery to Class 8 with world-class education, values, and a love for learning that lasts a lifetime.</p>
+    <div class="hero-btns">
+      <a href="#admissions" class="btn-primary">🎓 Apply for 2025-26</a>
+      <a href="#about" class="btn-ghost">▶ Virtual Tour</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card">
+      <span class="stat-num">25+</span>
+      <span class="stat-label">Years of Excellence</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">1500+</span>
+      <span class="stat-label">Happy Students</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">98%</span>
+      <span class="stat-label">Parent Satisfaction</span>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <div class="scroll-dot"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Excellence in Education</span>
+    <span class="marquee-item">Holistic Development</span>
+    <span class="marquee-item">Smart Classrooms</span>
+    <span class="marquee-item">CBSE Curriculum</span>
+    <span class="marquee-item">Sports & Arts</span>
+    <span class="marquee-item">Science Labs</span>
+    <span class="marquee-item">Safe Campus</span>
+    <span class="marquee-item">Qualified Faculty</span>
+    <!-- duplicate -->
+    <span class="marquee-item">Excellence in Education</span>
+    <span class="marquee-item">Holistic Development</span>
+    <span class="marquee-item">Smart Classrooms</span>
+    <span class="marquee-item">CBSE Curriculum</span>
+    <span class="marquee-item">Sports & Arts</span>
+    <span class="marquee-item">Science Labs</span>
+    <span class="marquee-item">Safe Campus</span>
+    <span class="marquee-item">Qualified Faculty</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-visual reveal">
+      <div class="about-img-main">🏫
+        <div class="about-card-float top-left">
+          <div class="about-card-icon">🏆</div>
+          <div class="about-card-text">Best School Award<span>Awarded 2023 & 2024</span></div>
+        </div>
+        <div class="about-card-float bot-right">
+          <div class="about-card-icon">❤️</div>
+          <div class="about-card-text">1,500+ Students<span>Happy & Thriving</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section-tag reveal">✨ About Us</div>
+      <h2 class="section-title reveal">Building <span style="color:var(--sky)">Bright Futures</span><br>Since 1999</h2>
+      <p class="section-sub reveal">Sunrise Academy is a premier institution dedicated to nurturing curious, confident, and compassionate learners. From Nursery to Class 8, we create an environment where every child discovers their unique potential.</p>
+      <div class="about-features reveal">
+        <div class="feat-item">
+          <div class="feat-icon sun">☀️</div>
+          <div class="feat-text"><strong>Holistic Learning</strong><span>Mind, body & spirit development</span></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon sky">🔬</div>
+          <div class="feat-text"><strong>STEM Focus</strong><span>Future-ready curriculum</span></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon mint">🎨</div>
+          <div class="feat-text"><strong>Arts & Culture</strong><span>Creativity at the core</span></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon coral">⚽</div>
+          <div class="feat-text"><strong>Sports Excellence</strong><span>District & state champions</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTERS -->
+<section id="counters">
+  <div class="counters-grid">
+    <div class="counter-item reveal">
+      <span class="counter-icon">👩‍🎓</span>
+      <span class="counter-num" data-target="1500">0</span>
+      <div class="counter-label">Students Enrolled</div>
+    </div>
+    <div class="counter-item reveal">
+      <span class="counter-icon">👨‍🏫</span>
+      <span class="counter-num" data-target="80">0</span>
+      <div class="counter-label">Expert Teachers</div>
+    </div>
+    <div class="counter-item reveal">
+      <span class="counter-icon">🏆</span>
+      <span class="counter-num" data-target="250">0</span>
+      <div class="counter-label">Awards Won</div>
+    </div>
+    <div class="counter-item reveal">
+      <span class="counter-icon">📚</span>
+      <span class="counter-num" data-target="25">0</span>
+      <div class="counter-label">Years of Excellence</div>
+    </div>
+  </div>
+</section>
+
+<!-- CLASSES -->
+<section id="classes">
+  <div class="classes-header">
+    <div class="section-tag reveal">📚 Our Classes</div>
+    <h2 class="section-title reveal">Learning for Every <span style="color:var(--coral)">Age Group</span></h2>
+    <p class="section-sub reveal">Carefully designed curriculum for Nursery to Class 8, tailored to each developmental stage</p>
+  </div>
+  <div class="classes-grid">
+
+    <div class="class-card cc-nursery reveal">
+      <span class="class-emoji">🌱</span>
+      <div class="class-title">Nursery & KG</div>
+      <div class="class-range">Age: 3–5 Years</div>
+      <p class="class-desc">Play-based learning that sparks curiosity, builds social skills, and lays the foundation for lifelong learning.</p>
+      <div class="class-subjects">
+        <span class="subject-tag st-sun">English</span>
+        <span class="subject-tag st-sky">Math</span>
+        <span class="subject-tag st-mint">Drawing</span>
+        <span class="subject-tag st-coral">EVS</span>
+      </div>
+      <div class="class-cta">Learn More →</div>
+    </div>
+
+    <div class="class-card cc-primary reveal">
+      <span class="class-emoji">📖</span>
+      <div class="class-title">Class 1 – 3</div>
+      <div class="class-range">Age: 6–9 Years</div>
+      <p class="class-desc">Building literacy, numeracy, and a love for exploration through interactive and hands-on experiences.</p>
+      <div class="class-subjects">
+        <span class="subject-tag st-sky">English</span>
+        <span class="subject-tag st-sun">Hindi</span>
+        <span class="subject-tag st-mint">Maths</span>
+        <span class="subject-tag st-lav">Science</span>
+      </div>
+      <div class="class-cta">Learn More →</div>
+    </div>
+
+    <div class="class-card cc-middle reveal">
+      <span class="class-emoji">🔬</span>
+      <div class="class-title">Class 4 – 6</div>
+      <div class="class-range">Age: 9–12 Years</div>
+      <p class="class-desc">Deepening academic knowledge with project-based learning, lab activities, and creative thinking.</p>
+      <div class="class-subjects">
+        <span class="subject-tag st-lav">Science</span>
+        <span class="subject-tag st-sun">Math</span>
+        <span class="subject-tag st-sky">Social</span>
+        <span class="subject-tag st-mint">Computer</span>
+        <span class="subject-tag st-coral">Art</span>
+      </div>
+      <div class="class-cta">Learn More →</div>
+    </div>
+
+    <div class="class-card cc-senior reveal">
+      <span class="class-emoji">🎯</span>
+      <div class="class-title">Class 7 – 8</div>
+      <div class="class-range">Age: 12–14 Years</div>
+      <p class="class-desc">Preparing students for high school with advanced concepts, leadership, and critical thinking skills.</p>
+      <div class="class-subjects">
+        <span class="subject-tag st-lime">Physics</span>
+        <span class="subject-tag st-sky">Chemistry</span>
+        <span class="subject-tag st-lav">Biology</span>
+        <span class="subject-tag st-sun">Maths</span>
+        <span class="subject-tag st-coral">History</span>
+      </div>
+      <div class="class-cta">Learn More →</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FACILITIES -->
+<section id="facilities">
+  <div class="facilities-header">
+    <div class="section-tag reveal">🏛️ Facilities</div>
+    <h2 class="section-title reveal">World-Class <span style="color:var(--mint)">Campus</span></h2>
+    <p class="section-sub reveal" style="margin:0 auto 3rem">Everything a child needs to learn, grow, and thrive in one safe, nurturing campus</p>
+  </div>
+  <div class="facilities-grid">
+    <div class="fac-card fac-sky large reveal">
+      <div class="fac-bg">🔬</div>
+      <div class="fac-content">
+        <span class="fac-icon">🔬</span>
+        <div class="fac-name">Science & Technology Lab</div>
+        <p class="fac-desc">State-of-the-art labs with the latest equipment, computers, and robotics kits for hands-on learning from Class 3 onwards.</p>
+      </div>
+    </div>
+    <div class="fac-card fac-coral reveal">
+      <div class="fac-bg">⚽</div>
+      <div class="fac-content">
+        <span class="fac-icon">⚽</span>
+        <div class="fac-name">Sports Ground</div>
+        <p class="fac-desc">Sprawling grounds with cricket, football, basketball, and athletics tracks.</p>
+      </div>
+    </div>
+    <div class="fac-card fac-mint reveal">
+      <div class="fac-bg">📚</div>
+      <div class="fac-content">
+        <span class="fac-icon">📚</span>
+        <div class="fac-name">Library</div>
+        <p class="fac-desc">10,000+ books, e-resources, and a digital reading zone.</p>
+      </div>
+    </div>
+    <div class="fac-card fac-lavender reveal">
+      <div class="fac-bg">🎨</div>
+      <div class="fac-content">
+        <span class="fac-icon">🎨</span>
+        <div class="fac-name">Art & Music Studio</div>
+        <p class="fac-desc">Dedicated spaces for painting, sculpture, vocals, and instruments.</p>
+      </div>
+    </div>
+    <div class="fac-card fac-sun large reveal">
+      <div class="fac-bg">🍱</div>
+      <div class="fac-content">
+        <span class="fac-icon">🍽️</span>
+        <div class="fac-name">Cafeteria & Health Centre</div>
+        <p class="fac-desc">Nutritious, hygienically prepared meals served daily along with a full-time nurse and first aid facility on campus for the wellbeing of every student.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEACHERS -->
+<section id="teachers">
+  <div class="teachers-header">
+    <div class="section-tag reveal">👩‍🏫 Our Faculty</div>
+    <h2 class="section-title reveal">Meet Our <span style="color:var(--lavender)">Amazing Teachers</span></h2>
+    <p class="section-sub reveal" style="margin:0 auto 3rem">Passionate educators committed to bringing out the best in every student</p>
+  </div>
+  <div class="teachers-grid">
+    <div class="teacher-card reveal">
+      <div class="teacher-avatar" style="background:linear-gradient(135deg,#FFD93D,#FF6B6B)">👩</div>
+      <div class="teacher-name">Mrs. Priya Sharma</div>
+      <div class="teacher-role">Principal & Founder</div>
+      <p class="teacher-bio">25 years of educational leadership. M.Ed from Delhi University. Visionary behind Sunrise Academy's holistic approach.</p>
+      <span class="teacher-badge">🏆 Educator of the Year 2023</span>
+    </div>
+    <div class="teacher-card reveal">
+      <div class="teacher-avatar" style="background:linear-gradient(135deg,#0EA5E9,#4ECDC4)">👨</div>
+      <div class="teacher-name">Mr. Arjun Mehta</div>
+      <div class="teacher-role">Mathematics & Science</div>
+      <p class="teacher-bio">IIT graduate with a passion for making math fun. Innovative teaching methods that make complex concepts crystal clear.</p>
+      <span class="teacher-badge">🔬 STEM Champion</span>
+    </div>
+    <div class="teacher-card reveal">
+      <div class="teacher-avatar" style="background:linear-gradient(135deg,#A78BFA,#4C1D95)">👩</div>
+      <div class="teacher-name">Ms. Ananya Gupta</div>
+      <div class="teacher-role">English & Arts</div>
+      <p class="teacher-bio">Published author and language expert. Creates immersive storytelling experiences that ignite creativity in young minds.</p>
+      <span class="teacher-badge">📖 Best Language Teacher</span>
+    </div>
+    <div class="teacher-card reveal">
+      <div class="teacher-avatar" style="background:linear-gradient(135deg,#84CC16,#0D4F4C)">👨</div>
+      <div class="teacher-name">Mr. Rohit Kumar</div>
+      <div class="teacher-role">Sports & Physical Ed</div>
+      <p class="teacher-bio">National-level athlete turned coach. Led students to 15 district championships in the last 5 years.</p>
+      <span class="teacher-badge">⚽ State Coach Award</span>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" style="padding-bottom:4rem">
+  <div class="gallery-header">
+    <div class="section-tag reveal">📸 Gallery</div>
+    <h2 class="section-title reveal">Life at <span style="color:var(--coral)">Sunrise Academy</span></h2>
+  </div>
+  <div class="gallery-row">
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FFD93D,#FF6B6B)" data-label="Annual Day">🎭</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#0EA5E9,#075985)" data-label="Science Fair">🔭</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#4ECDC4,#0D4F4C)" data-label="Sports Day">🏃</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#A78BFA,#4C1D95)" data-label="Art Class">🎨</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#84CC16,#1A2E05)" data-label="Garden Club">🌱</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FF6B6B,#7F1D1D)" data-label="Music Show">🎵</div>
+    <!-- duplicate for seamless loop -->
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FFD93D,#FF6B6B)" data-label="Annual Day">🎭</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#0EA5E9,#075985)" data-label="Science Fair">🔭</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#4ECDC4,#0D4F4C)" data-label="Sports Day">🏃</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#A78BFA,#4C1D95)" data-label="Art Class">🎨</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#84CC16,#1A2E05)" data-label="Garden Club">🌱</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FF6B6B,#7F1D1D)" data-label="Music Show">🎵</div>
+  </div>
+  <div class="gallery-row">
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FFA07A,#B45309)" data-label="Library Time">📚</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#1A1A2E,#0EA5E9)" data-label="Robotics Club">🤖</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#4ECDC4,#FFD93D)" data-label="Math Olympiad">🏅</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FF6B6B,#A78BFA)" data-label="Dance Class">💃</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#84CC16,#0EA5E9)" data-label="Field Trip">🚌</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FFD93D,#4ECDC4)" data-label="Prize Day">🎖️</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FFA07A,#B45309)" data-label="Library Time">📚</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#1A1A2E,#0EA5E9)" data-label="Robotics Club">🤖</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#4ECDC4,#FFD93D)" data-label="Math Olympiad">🏅</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FF6B6B,#A78BFA)" data-label="Dance Class">💃</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#84CC16,#0EA5E9)" data-label="Field Trip">🚌</div>
+    <div class="gallery-item" style="background:linear-gradient(135deg,#FFD93D,#4ECDC4)" data-label="Prize Day">🎖️</div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="testimonials-header">
+    <div class="section-tag reveal">💬 Testimonials</div>
+    <h2 class="section-title reveal">What <span style="color:var(--sky)">Parents Say</span></h2>
+    <p class="section-sub reveal" style="margin:0 auto 3rem">Real stories from families who've made Sunrise Academy their home</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testi-card reveal">
+      <div class="testi-quote">"</div>
+      <p class="testi-text">My daughter transformed completely in just one year. Her confidence, curiosity, and love for reading blossomed. The teachers truly care about each child individually.</p>
+      <div style="display:flex;align-items:center">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#FFD93D,#FF6B6B)">👩</div>
+        <div><div class="testi-name">Mrs. Kavita Agarwal</div><div class="testi-role">Parent, Class 4</div><div class="stars">★★★★★</div></div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-quote">"</div>
+      <p class="testi-text">The STEM program here is exceptional. My son built his first robot in Class 6! The school balances academics and extracurriculars perfectly.</p>
+      <div style="display:flex;align-items:center">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#0EA5E9,#4ECDC4)">👨</div>
+        <div><div class="testi-name">Mr. Rajesh Patel</div><div class="testi-role">Parent, Class 6</div><div class="stars">★★★★★</div></div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-quote">"</div>
+      <p class="testi-text">Safe campus, caring teachers, great infrastructure. Our three kids all studied here and each one has had a wonderful, memorable journey. Highly recommend!</p>
+      <div style="display:flex;align-items:center">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#A78BFA,#4C1D95)">👩</div>
+        <div><div class="testi-name">Mrs. Sunita Verma</div><div class="testi-role">Parent, Class 8 & Alumni</div><div class="stars">★★★★★</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADMISSIONS -->
+<section id="admissions">
+  <div class="adm-badge">🎓 Admissions Open 2025–26</div>
+  <h2 class="adm-title reveal">Give Your Child the<br>Best Start in Life</h2>
+  <p class="adm-sub reveal">Limited seats available. Register now to secure your child's future at Sunrise Academy.</p>
+  <div class="adm-steps reveal">
+    <div class="adm-step">
+      <span class="adm-step-num">01</span>
+      <div class="adm-step-label">📝 Fill Form</div>
+    </div>
+    <div class="adm-step">
+      <span class="adm-step-num">02</span>
+      <div class="adm-step-label">📋 Assessment</div>
+    </div>
+    <div class="adm-step">
+      <span class="adm-step-num">03</span>
+      <div class="adm-step-label">👨‍👩‍👧 Interview</div>
+    </div>
+    <div class="adm-step">
+      <span class="adm-step-num">04</span>
+      <div class="adm-step-label">✅ Enrolment</div>
+    </div>
+  </div>
+  <div class="adm-btns reveal">
+    <a href="#contact" class="btn-white">📝 Apply Now</a>
+    <a href="#contact" class="btn-ghost">📞 Book Campus Visit</a>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-grid">
+    <div>
+      <div class="section-tag reveal">📞 Contact</div>
+      <h2 class="section-title reveal">Get in <span style="color:var(--sky)">Touch</span></h2>
+      <p class="section-sub reveal">We'd love to hear from you. Our admissions team is available Mon–Sat, 9AM to 5PM.</p>
+      <div class="contact-items reveal">
+        <div class="c-item">
+          <div class="c-icon sky">📍</div>
+          <div class="c-text"><strong>Address</strong><span>12 Sunshine Marg, Sector 21, New Delhi – 110 001</span></div>
+        </div>
+        <div class="c-item">
+          <div class="c-icon sun">📞</div>
+          <div class="c-text"><strong>Phone</strong><span>+91 11 2345 6789 | +91 98765 43210</span></div>
+        </div>
+        <div class="c-item">
+          <div class="c-icon mint">✉️</div>
+          <div class="c-text"><strong>Email</strong><span>admissions@sunriseacademy.edu.in</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="contact-form reveal">
+      <h3>📬 Send a Message</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Parent Name</label>
+          <input type="text" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" placeholder="+91 XXXXX XXXXX">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label>Child's Grade Applying For</label>
+        <select>
+          <option>Select Class</option>
+          <option>Nursery / LKG / UKG</option>
+          <option>Class 1</option>
+          <option>Class 2</option>
+          <option>Class 3</option>
+          <option>Class 4</option>
+          <option>Class 5</option>
+          <option>Class 6</option>
+          <option>Class 7</option>
+          <option>Class 8</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Message (Optional)</label>
+        <textarea placeholder="Any questions or special requirements?"></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitForm(this)">🚀 Send Message</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo"><span>☀️</span> Sunrise <span>Academy</span></a>
+      <p>Nurturing young minds from Nursery to Class 8. Building the leaders, thinkers, and dreamers of tomorrow.</p>
+      <div class="social-links">
+        <a class="social-btn" href="#">📘</a>
+        <a class="social-btn" href="#">📸</a>
+        <a class="social-btn" href="#">▶️</a>
+        <a class="social-btn" href="#">🐦</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#classes">Our Classes</a></li>
+        <li><a href="#facilities">Facilities</a></li>
+        <li><a href="#teachers">Faculty</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Programs</h4>
+      <ul>
+        <li><a href="#">Nursery & KG</a></li>
+        <li><a href="#">Primary (1–3)</a></li>
+        <li><a href="#">Middle (4–6)</a></li>
+        <li><a href="#">Senior (7–8)</a></li>
+        <li><a href="#">After School</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">📍 New Delhi</a></li>
+        <li><a href="#">📞 +91 11 2345 6789</a></li>
+        <li><a href="#">✉️ Email Us</a></li>
+        <li><a href="#">📅 Book a Visit</a></li>
+        <li><a href="#">🎓 Apply Now</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Sunrise Academy. All rights reserved. Made with <span>❤️</span> for every child's future.</p>
+    <p style="font-size:.82rem;color:#475569">Privacy Policy · Terms · Sitemap</p>
+  </div>
+</footer>
+
+<!-- BACK TO TOP -->
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- ──────────────────────── SCRIPTS ──────────────────────── -->
+<script>
+/* ── REGISTER GSAP PLUGINS ── */
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+/* ── LOADER ── */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    gsap.to('#loader', {
+      opacity: 0, duration: .7, ease: 'power2.inOut',
+      onComplete: () => { document.getElementById('loader').style.display = 'none'; initAnimations(); }
+    });
+  }, 2200);
+});
+
+/* ── THREE.JS HERO BACKGROUND ── */
+function initThree() {
+  const canvas = document.getElementById('three-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, 100);
+  camera.position.z = 5;
+
+  // Particles
+  const count = 1200;
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3]     = (Math.random() - .5) * 20;
+    pos[i * 3 + 1] = (Math.random() - .5) * 20;
+    pos[i * 3 + 2] = (Math.random() - .5) * 10;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ size: .06, color: 0xffffff, transparent: true, opacity: .6 });
+  const points = new THREE.Points(geo, mat);
+  scene.add(points);
+
+  // Floating stars (colored)
+  const colors = [0xFFD93D, 0xFF6B6B, 0x4ECDC4, 0xA78BFA];
+  for (let i = 0; i < 6; i++) {
+    const sg = new THREE.SphereGeometry(.18 + Math.random() * .25, 16, 16);
+    const sm = new THREE.MeshBasicMaterial({ color: colors[i % 4], transparent: true, opacity: .35 });
+    const sphere = new THREE.Mesh(sg, sm);
+    sphere.position.set((Math.random() - .5) * 14, (Math.random() - .5) * 8, (Math.random() - .5) * 3);
+    sphere.userData = { speed: .3 + Math.random() * .4, offset: Math.random() * Math.PI * 2 };
+    scene.add(sphere);
+  }
+
+  function resize() {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let mouse = { x: 0, y: 0 };
+  window.addEventListener('mousemove', e => {
+    mouse.x = (e.clientX / window.innerWidth - .5) * 2;
+    mouse.y = -(e.clientY / window.innerHeight - .5) * 2;
+  });
+
+  const clock = new THREE.Clock();
+  (function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    points.rotation.y = t * .04;
+    points.rotation.x = t * .02;
+    camera.position.x += (mouse.x * .5 - camera.position.x) * .02;
+    camera.position.y += (mouse.y * .3 - camera.position.y) * .02;
+
+    scene.children.forEach(child => {
+      if (child.userData.speed) {
+        child.position.y += Math.sin(t * child.userData.speed + child.userData.offset) * .003;
+        child.rotation.z = t * .2;
+      }
+    });
+    renderer.render(scene, camera);
+  })();
+}
+initThree();
+
+/* ── CUSTOM CURSOR ── */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function moveCursor() {
+  requestAnimationFrame(moveCursor);
+  rx += (mx - rx) * .15; ry += (my - ry) * .15;
+  cursor.style.transform = `translate(${mx - 10}px, ${my - 10}px)`;
+  ring.style.transform   = `translate(${rx - 22}px, ${ry - 22}px)`;
+})();
+document.querySelectorAll('a,button,.class-card,.teacher-card,.fac-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform += ' scale(2)'; ring.style.opacity = '.4'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform  = cursor.style.transform.replace(' scale(2)',''); ring.style.opacity = '1'; });
+});
+
+/* ── NAV SCROLL ── */
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+  document.getElementById('back-top').classList.toggle('show', window.scrollY > 500);
+});
+
+/* ── MOBILE NAV ── */
+function toggleMobile() { document.getElementById('mobileNav').classList.toggle('open'); }
+function closeMobile()  { document.getElementById('mobileNav').classList.remove('open'); }
+
+/* ── GSAP ANIMATIONS ── */
+function initAnimations() {
+  // Hero entrance
+  gsap.from('.hero-badge',   { opacity:0, y:30, duration:.8, delay:.2 });
+  gsap.from('.hero-title',   { opacity:0, y:50, duration:1,  delay:.4, ease:'power3.out' });
+  gsap.from('.hero-sub',     { opacity:0, y:30, duration:.8, delay:.7 });
+  gsap.from('.hero-btns',    { opacity:0, y:30, duration:.8, delay:.9 });
+  gsap.from('.hero-stats .stat-card', { opacity:0, y:40, duration:.7, delay:1.2, stagger:.15 });
+  gsap.from('.scroll-indicator', { opacity:0, duration:.6, delay:1.6 });
+
+  // Scroll reveals
+  gsap.utils.toArray('.reveal').forEach(el => {
+    gsap.fromTo(el, { opacity:0, y:50 }, {
+      opacity:1, y:0, duration:.8, ease:'power3.out',
+      scrollTrigger: { trigger:el, start:'top 88%', toggleActions:'play none none none' }
+    });
+  });
+
+  // Counters
+  document.querySelectorAll('.counter-num').forEach(el => {
+    const target = +el.dataset.target;
+    ScrollTrigger.create({
+      trigger: el, start:'top 85%', once:true,
+      onEnter: () => {
+        gsap.to({ val:0 }, {
+          val: target, duration:2, ease:'power2.out',
+          onUpdate: function() { el.textContent = Math.round(this.targets()[0].val) + '+'; }
+        });
+      }
+    });
+  });
+
+  // Section titles stagger
+  gsap.utils.toArray('.section-title').forEach(el => {
+    gsap.from(el, {
+      opacity:0, x:-40, duration:.8,
+      scrollTrigger:{ trigger:el, start:'top 85%' }
+    });
+  });
+
+  // Class cards 3D tilt
+  document.querySelectorAll('.class-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - .5;
+      const y = (e.clientY - r.top)  / r.height - .5;
+      gsap.to(card, { rotateY:x*14, rotateX:-y*10, duration:.3, transformPerspective:800, ease:'power1.out' });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { rotateY:0, rotateX:0, duration:.5, ease:'elastic.out(1,.6)' });
+    });
+  });
+
+  // Teacher card tilt
+  document.querySelectorAll('.teacher-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - .5;
+      const y = (e.clientY - r.top)  / r.height - .5;
+      gsap.to(card, { rotateY:x*12, rotateX:-y*8, duration:.3, transformPerspective:600 });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { rotateY:0, rotateX:0, duration:.4, ease:'power2.out' });
+    });
+  });
+
+  // Facility cards stagger
+  gsap.from('.fac-card', {
+    opacity:0, scale:.9, duration:.7, stagger:.12, ease:'back.out(1.4)',
+    scrollTrigger:{ trigger:'#facilities .facilities-grid', start:'top 80%' }
+  });
+
+  // Floating hero shapes parallax
+  window.addEventListener('scroll', () => {
+    const s = window.scrollY;
+    document.querySelectorAll('.shape').forEach((shape, i) => {
+      shape.style.transform = `translateY(${s * (.1 + i * .05)}px)`;
+    });
+  });
+}
+
+/* ── FORM SUBMIT ── */
+function submitForm(btn) {
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Sending...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = '✅ Message Sent!';
+    btn.style.background = 'linear-gradient(135deg,#84CC16,#4ECDC4)';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 3000);
+  }, 1800);
+}
+
+/* ── ANIME.JS: Admission steps bounce ── */
+anime({
+  targets: '.adm-step',
+  translateY: [-10, 0],
+  opacity: [0, 1],
+  delay: anime.stagger(150, { start: 800 }),
+  duration: 800,
+  easing: 'spring(1, 80, 10, 0)',
+  loop: false
+});
+
+/* ── Smooth scroll for nav links ── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
+
+function scrollTo(sel) {
+  document.querySelector(sel)?.scrollIntoView({ behavior:'smooth' });
+}
+</script>
+</body>
+</html>
